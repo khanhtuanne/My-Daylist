@@ -1,25 +1,21 @@
 import streamlit as st
 import google.generativeai as genai
 
-st.title("Trang Kiểm Tra Lỗi 🔍")
+st.title("Ứng dụng AI của riêng tôi 🤖")
 
-# 1. Kiểm tra xem Streamlit có thấy API Key không
-try:
-    api_key = st.secrets["GEMINI_API_KEY"]
-    st.success(f"✅ Đã tìm thấy API Key trong két sắt (Độ dài: {len(api_key)} ký tự)")
-    genai.configure(api_key=api_key)
-except KeyError:
-    st.error("❌ LỖI: Streamlit không tìm thấy GEMINI_API_KEY. Két sắt đang trống hoặc sai tên biến.")
-    st.stop()
+# Lấy chìa khóa API từ két sắt
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 
-# 2. Kiểm tra xem API Key này được phép dùng những con AI nào của Google
-st.write("Đang kết nối với Google để lấy danh sách model...")
-try:
-    models = list(genai.list_models())
-    st.success("✅ Kết nối Google thành công!")
-    st.write("Danh sách model bạn được phép dùng:")
-    for m in models:
-         if 'generateContent' in m.supported_generation_methods:
-             st.code(m.name)
-except Exception as e:
-    st.error(f"❌ LỖI KẾT NỐI GOOGLE: {e}")
+# SỬ DỤNG MODEL MỚI NHẤT TRONG DANH SÁCH CỦA BẠN
+model = genai.GenerativeModel('gemini-2.5-flash')
+
+# Khung nhập câu hỏi
+user_input = st.text_input("Bạn muốn hỏi gì?")
+
+if st.button("Gửi"):
+    if user_input:
+        with st.spinner('Đang suy nghĩ...'):
+            response = model.generate_content(user_input)
+            st.write(response.text)
+    else:
+        st.warning("Vui lòng nhập câu hỏi của bạn!")
